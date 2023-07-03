@@ -3,6 +3,7 @@ package de.bembelnaut.spike.notificationdemo
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
 
         Log.i("TEST", "onCreate: entering")
 
-        val alarmScheduler = AndroidAlarmScheduler(this)
+        val alarmScheduler = AndroidAlarmScheduler(applicationContext)
 
         setContent {
             NotificationDemoTheme {
@@ -81,6 +82,8 @@ class MainActivity : ComponentActivity() {
 
             val taskId = intent.getStringExtra("TASK_ID") ?: "n/a"
             Log.i("TEST", "onReceive: task id: $taskId")
+
+            Toast.makeText(this@MainActivity, "$action: Start task: $taskId", Toast.LENGTH_SHORT).show()
         }
     }
 

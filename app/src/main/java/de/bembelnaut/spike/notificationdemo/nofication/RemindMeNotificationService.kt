@@ -41,6 +41,8 @@ class RemindMeNotificationService(
             Intent(context, RemindMeNotificationReceiver::class.java).apply {
                 action = ACTION_REMIND_ME_LATER
                 putExtra("TASK_ID", taskId)
+                putExtra("TITLE", title)
+                putExtra("MESSAGE", message)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // update current required to send extra data
         )
@@ -51,6 +53,8 @@ class RemindMeNotificationService(
             Intent(context, RemindMeNotificationReceiver::class.java).apply {
                 action = ACTION_DELETE
                 putExtra("TASK_ID", taskId)
+                putExtra("TITLE", title)
+                putExtra("MESSAGE", message)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // update current required to send extra data
         )

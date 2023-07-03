@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import de.bembelnaut.spike.notificationdemo.alarm.AlarmReceiver.Companion.ACTION_ALARM
 import java.time.ZoneId
+import java.util.UUID
 
 class AndroidAlarmScheduler(
     private val context: Context,
@@ -24,7 +25,7 @@ class AndroidAlarmScheduler(
 
         val pendingBroadcastIntent = PendingIntent.getBroadcast(
             context,
-            item.hashCode(),
+            item.taskId.toString().hashCode(),
             broadcastIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
@@ -36,11 +37,11 @@ class AndroidAlarmScheduler(
         )
     }
 
-    override fun cancel(item: AlarmItem) {
+    override fun cancel(taskId: UUID) {
         alarmManager.cancel(
             PendingIntent.getBroadcast(
                 context,
-                item.hashCode(),
+                taskId.toString().hashCode(),
                 Intent(context, AlarmReceiver::class.java),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
