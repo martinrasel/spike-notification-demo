@@ -1,15 +1,15 @@
-package de.bembelnaut.spike.notificationdemo
+package de.bembelnaut.spike.notificationdemo.nofication
 
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
-import java.time.LocalDate
-import java.util.UUID
+import de.bembelnaut.spike.notificationdemo.MainActivity
+import de.bembelnaut.spike.notificationdemo.MainActivity.Companion.START_TASK
+import de.bembelnaut.spike.notificationdemo.R
+import de.bembelnaut.spike.notificationdemo.nofication.RemindMeNotificationReceiver.Companion.ACTION_DELETE
+import de.bembelnaut.spike.notificationdemo.nofication.RemindMeNotificationReceiver.Companion.ACTION_REMIND_ME_LATER
 
 class RemindMeNotificationService(
     private val context: Context
@@ -18,15 +18,13 @@ class RemindMeNotificationService(
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     fun showNotification(
-        taskName: String,
-        taskId: UUID,
-        dateTime: LocalDate,
-        message: String
+        title: String,
+        message: String,
+        taskId: String,
     ) {
         val activityIntent = Intent(context, MainActivity::class.java).apply {
-            putExtra("ACTION", "CLICK")
-            putExtra("TASK_NAME", taskName)
-            putExtra("TASK_ID", taskId.toString())
+            action = START_TASK
+            putExtra("TASK_ID", taskId)
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP // otherwise onNewIntent in activity isn't called; instead onCreate
         }
 
@@ -39,29 +37,27 @@ class RemindMeNotificationService(
 
         val buttonPendingIntent = PendingIntent.getBroadcast(
             context,
-            2,
+            REQUEST_CODE_REMIND_LATER,
             Intent(context, RemindMeNotificationReceiver::class.java).apply {
-                putExtra("ACTION", "NOT_TODAY")
-                putExtra("TASK_NAME", taskName)
-                putExtra("TASK_ID", taskId.toString())
+                action = ACTION_REMIND_ME_LATER
+                putExtra("TASK_ID", taskId)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // update current required to send extra data
         )
 
         val deletePendingIntent = PendingIntent.getBroadcast(
             context,
-            3,
+            REQUEST_CODE_DELETE_TASK,
             Intent(context, RemindMeNotificationReceiver::class.java).apply {
-                putExtra("ACTION", "DELETE")
-                putExtra("TASK_NAME", taskName)
-                putExtra("TASK_ID", taskId.toString())
+                action = ACTION_DELETE
+                putExtra("TASK_ID", taskId)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // update current required to send extra data
         )
 
         val notification = NotificationCompat.Builder(context, REMIND_ME_NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_icon)
-            .setContentTitle("Reminder")
+            .setContentTitle(title)
             .setContentText(message)
             .setContentIntent(activityPendingIntent)
             .setOngoing(false) // can't cancel your notification - user must do this explicit; except notificationManager.cancel(); doesnt work with auto cancel and button action
@@ -74,15 +70,19 @@ class RemindMeNotificationService(
             //.setBubbleMetadata() // a "bubble" beside the screen - like FB new message
             .addAction(
                 R.drawable.ic_notification_icon,
-                "Not today...",
+                "Remind me later...",
                 buttonPendingIntent
             )
             .build()
 
-        notificationManager.notify(1, notification)
+        val notificationId = taskId.hashCode()
+
+        notificationManager.notify(notificationId, notification)
     }
 
     companion object {
         const val REMIND_ME_NOTIFICATION_CHANNEL_ID = "de.bembelnaut.spike.notificationdemo.channel.remindme"
+        const val REQUEST_CODE_REMIND_LATER = 1
+        const val REQUEST_CODE_DELETE_TASK = 2
     }
 }

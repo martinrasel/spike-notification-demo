@@ -12,8 +12,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import de.bembelnaut.spike.notificationdemo.alarm.AlarmItem
+import de.bembelnaut.spike.notificationdemo.alarm.AndroidAlarmScheduler
 import de.bembelnaut.spike.notificationdemo.ui.theme.NotificationDemoTheme
-import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.UUID
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
         Log.i("TEST", "onCreate: entering")
 
-        val service = RemindMeNotificationService(applicationContext)
+        val alarmScheduler = AndroidAlarmScheduler(this)
 
         setContent {
             NotificationDemoTheme {
@@ -32,30 +35,36 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+
+                    // Create a alarm, that notifies me
                     Button(
                         onClick = {
-                            service.showNotification(
-                                "Test task 1",
-                                uuid1,
-                                LocalDate.now(),
-                                "Hello World"
+                            val alarm1 = AlarmItem(
+                                LocalDateTime.now(ZoneId.systemDefault()).plusSeconds(10L),
+                                "Homework",
+                                "Pls start your homework",
+                                uuid1
                             )
+
+                            alarmScheduler.schedule(alarm1)
                         }
                     ) {
-                        Text("Task 1")
+                        Text("Create homework")
                     }
 
                     Button(
                         onClick = {
-                            service.showNotification(
-                                "Test task 2",
-                                uuid2,
-                                LocalDate.now(),
-                                "Hello World"
+                            val alarm2 = AlarmItem(
+                                LocalDateTime.now(ZoneId.systemDefault()).plusSeconds(20L),
+                                "Test",
+                                "Test is ready!",
+                                uuid2
                             )
+
+                            alarmScheduler.schedule(alarm2)
                         }
                     ) {
-                        Text("Task 2")
+                        Text("Create test")
                     }
                 }
             }
@@ -67,17 +76,19 @@ class MainActivity : ComponentActivity() {
 
         super.onNewIntent(intent)
 
-        val taskName = intent?.getStringExtra("TASK_NAME") ?: "n/a"
-        val taskId = intent?.getStringExtra("TASK_ID") ?: "n/a"
-        val action = intent?.getStringExtra("ACTION") ?: "n/a"
+        intent?.run {
+            Log.i("TEST", "onReceive: action: $action")
 
-        Log.i("TEST", "onNewIntent: action: $action")
-        Log.i("TEST", "onNewIntent: task name: $taskName")
-        Log.i("TEST", "onNewIntent: task id: $taskId")
+            val taskId = intent.getStringExtra("TASK_ID") ?: "n/a"
+            Log.i("TEST", "onReceive: task id: $taskId")
+        }
     }
 
     companion object {
-        val uuid1 = UUID.randomUUID()
-        val uuid2 = UUID.randomUUID()
+        private val uuid1: UUID = UUID.randomUUID()
+        private val uuid2: UUID = UUID.randomUUID()
+
+
+        const val START_TASK = "start_task"
     }
 }
