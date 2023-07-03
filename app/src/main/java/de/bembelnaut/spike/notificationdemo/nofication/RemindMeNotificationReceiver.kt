@@ -28,9 +28,14 @@ class RemindMeNotificationReceiver : BroadcastReceiver() {
 
             when(action) {
                 ACTION_REMIND_ME_LATER -> {
-                    // button actions won't be removed after on click; remove it manually
-                    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                    notificationManager.cancel(taskId.hashCode())
+                    val remindMeNotificationService = RemindMeNotificationService(context)
+                    remindMeNotificationService.removeNotification(
+                        NotificationItem(
+                            title,
+                            message,
+                            taskId
+                        )
+                    )
 
                     alarmScheduler.schedule(
                         AlarmItem(

@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import de.bembelnaut.spike.notificationdemo.nofication.RemindMeNotificationService
 
+
 class MyApp : Application() {
 
     override fun onCreate() {
@@ -23,7 +24,8 @@ class MyApp : Application() {
         )
         channel.description = "Used for learning reminder"
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import de.bembelnaut.spike.notificationdemo.nofication.NotificationItem
 import de.bembelnaut.spike.notificationdemo.nofication.RemindMeNotificationService
 
 
@@ -26,8 +27,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val service = RemindMeNotificationService(context)
 
-        service.showNotification(title, message, taskId)
-
+        service.showNotification(NotificationItem(title, message, taskId))
     }
 
     companion object {

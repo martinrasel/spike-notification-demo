@@ -83,7 +83,8 @@ class MainActivity : ComponentActivity() {
             val taskId = intent.getStringExtra("TASK_ID") ?: "n/a"
             Log.i("TEST", "onReceive: task id: $taskId")
 
-            Toast.makeText(this@MainActivity, "$action: Start task: $taskId", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MainActivity, "$action: Start task: $taskId", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 

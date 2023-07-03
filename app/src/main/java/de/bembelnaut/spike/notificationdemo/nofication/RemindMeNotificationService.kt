@@ -13,24 +13,22 @@ import de.bembelnaut.spike.notificationdemo.nofication.RemindMeNotificationRecei
 
 class RemindMeNotificationService(
     private val context: Context
-) {
+): NotificationService {
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    fun showNotification(
-        title: String,
-        message: String,
-        taskId: String,
+    override fun showNotification(
+        item: NotificationItem
     ) {
         val activityIntent = Intent(context, MainActivity::class.java).apply {
             action = START_TASK
-            putExtra("TASK_ID", taskId)
+            putExtra("TASK_ID", item.taskId)
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP // otherwise onNewIntent in activity isn't called; instead onCreate
         }
 
         val activityPendingIntent = PendingIntent.getActivity(
             context,
-            taskId.hashCode(),
+            item.taskId.hashCode(),
             activityIntent,
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -40,9 +38,9 @@ class RemindMeNotificationService(
             REQUEST_CODE_REMIND_LATER,
             Intent(context, RemindMeNotificationReceiver::class.java).apply {
                 action = ACTION_REMIND_ME_LATER
-                putExtra("TASK_ID", taskId)
-                putExtra("TITLE", title)
-                putExtra("MESSAGE", message)
+                putExtra("TASK_ID", item.taskId)
+                putExtra("TITLE", item.title)
+                putExtra("MESSAGE", item.message)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // update current required to send extra data
         )
@@ -52,17 +50,17 @@ class RemindMeNotificationService(
             REQUEST_CODE_DELETE_TASK,
             Intent(context, RemindMeNotificationReceiver::class.java).apply {
                 action = ACTION_DELETE
-                putExtra("TASK_ID", taskId)
-                putExtra("TITLE", title)
-                putExtra("MESSAGE", message)
+                putExtra("TASK_ID", item.taskId)
+                putExtra("TITLE", item.title)
+                putExtra("MESSAGE", item.message)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE // update current required to send extra data
         )
 
         val notification = NotificationCompat.Builder(context, REMIND_ME_NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_icon)
-            .setContentTitle(title)
-            .setContentText(message)
+            .setContentTitle(item.title)
+            .setContentText(item.message)
             .setContentIntent(activityPendingIntent)
             .setOngoing(false) // can't cancel your notification - user must do this explicit; except notificationManager.cancel(); doesnt work with auto cancel and button action
             //.setLights(Color.Blue.toArgb(), 500, 500) // works only with LED...
@@ -79,9 +77,14 @@ class RemindMeNotificationService(
             )
             .build()
 
-        val notificationId = taskId.hashCode()
+        val notificationId = item.taskId.hashCode()
 
         notificationManager.notify(notificationId, notification)
+    }
+
+    override fun removeNotification(item: NotificationItem) {
+        // button actions won't be removed after on click; remove it manually
+        notificationManager.cancel(item.taskId.hashCode())
     }
 
     companion object {
